@@ -1,0 +1,25 @@
+# Documentation and local validation inventory. The installer reads install-config.yaml.
+cluster: virt-lab.example.test
+networks:
+  machine: 192.0.2.0/24
+  bmc: 198.51.100.0/24
+  pods: 10.128.0.0/14
+  services: 172.30.0.0/16
+addresses:
+  gateway: 192.0.2.1
+  provisioner: 192.0.2.10
+  bootstrap: 192.0.2.20
+  clusterProvisioning: 192.0.2.21
+  api: 192.0.2.30
+  ingress: 192.0.2.31
+  dns: 192.0.2.53
+  ntp: 192.0.2.54
+bootstrapMAC: '52:54:00:42:00:20'
+hosts:
+  # name, role, node OS address, BMC address, host boot MAC, root disk serial
+  - [master-0, master, 192.0.2.41, 198.51.100.11, '02:00:00:00:00:01', LAB-master-0-OS]
+  - [master-1, master, 192.0.2.42, 198.51.100.12, '02:00:00:00:00:02', LAB-master-1-OS]
+  - [master-2, master, 192.0.2.43, 198.51.100.13, '02:00:00:00:00:03', LAB-master-2-OS]
+  - [worker-0, worker, 192.0.2.44, 198.51.100.14, '02:00:00:00:00:04', LAB-worker-0-OS]
+  - [worker-1, worker, 192.0.2.45, 198.51.100.15, '02:00:00:00:00:05', LAB-worker-1-OS]
+  - [worker-2, worker, 192.0.2.46, 198.51.100.16, '02:00:00:00:00:06', LAB-worker-2-OS]

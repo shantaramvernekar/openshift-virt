@@ -1,0 +1,24 @@
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: virt-guest-bridge
+spec:
+  # Apply a site label to selected workers only after checking their NICs.
+  nodeSelector:
+    lab.example.test/guest-uplink: "true"
+  desiredState:
+    interfaces:
+      - name: br-guest
+        type: linux-bridge
+        state: up
+        ipv4:
+          enabled: false
+        ipv6:
+          enabled: false
+        bridge:
+          options:
+            stp:
+              enabled: false
+          port:
+            # Site-specific dedicated trunk port. Keep the cluster uplink separate.
+            - name: eno2

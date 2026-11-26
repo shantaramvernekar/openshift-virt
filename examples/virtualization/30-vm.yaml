@@ -1,0 +1,90 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: virt-smoke
+  namespace: virt-smoke
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: virt-smoke-root
+      spec:
+        source:
+          http:
+            # Provide an approved, CDI-reachable, bootable Linux cloud image.
+            url: https://images.example.test/guest/linux-x86_64.qcow2
+        storage:
+          storageClassName: replace-with-rwx-block-csi
+          accessModes: [ReadWriteMany]
+          volumeMode: Block
+          resources:
+            requests:
+              storage: 20Gi
+  template:
+    metadata:
+      labels:
+        app: virt-smoke
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+      domain:
+        cpu:
+          cores: 2
+        resources:
+          requests:
+            memory: 2Gi
+        devices:
+          disks:
+            - name: root
+              disk:
+                bus: virtio
+            - name: cloud-init
+              disk:
+                bus: virtio
+          interfaces:
+            - name: podnet
+              masquerade: {}
+              ports:
+                - name: ssh
+                  port: 22
+                - name: http
+                  port: 8080
+      networks:
+        - name: podnet
+          pod: {}
+      volumes:
+        - name: root
+          dataVolume:
+            name: virt-smoke-root
+        - name: cloud-init
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              users:
+                - default
+                - name: lab
+                  shell: /bin/bash
+                  sudo: "ALL=(ALL) NOPASSWD:ALL"
+                  ssh_authorized_keys:
+                    - REPLACE_WITH_LAB_OPENSSH_PUBLIC_KEY
+              ssh_pwauth: false
+              write_files:
+                - path: /etc/systemd/system/virt-smoke.service
+                  permissions: '0644'
+                  content: |
+                    [Unit]
+                    Description=VM smoke test HTTP
+                    After=network-online.target
+                    Wants=network-online.target
+                    [Service]
+                    ExecStart=/usr/bin/python3 -m http.server 8080 --directory /var/lib/virt-smoke
+                    DynamicUser=yes
+                    Restart=on-failure
+                    [Install]
+                    WantedBy=multi-user.target
+              runcmd:
+                - [install, -d, -m, '0755', /var/lib/virt-smoke]
+                - [sh, -c, 'printf "guest-ok\n" > /var/lib/virt-smoke/health']
+                - [chmod, '0644', /var/lib/virt-smoke/health]
+                - [systemctl, daemon-reload]
+                - [systemctl, enable, --now, virt-smoke.service]

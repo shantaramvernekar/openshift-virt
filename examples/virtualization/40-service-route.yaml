@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: virt-smoke
+  namespace: virt-smoke
+spec:
+  selector:
+    app: virt-smoke
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: virt-smoke
+  namespace: virt-smoke
+spec:
+  host: virt-smoke.apps.virt-lab.example.test
+  to:
+    kind: Service
+    name: virt-smoke
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

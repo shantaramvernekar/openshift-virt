@@ -1,0 +1,117 @@
+# OpenShift 4.20 x86_64, cluster-managed VIPs, HPE iLO virtual media.
+# Copy and adapt this template for your site. Render it with scripts/render-install-config.py.
+apiVersion: v1
+baseDomain: example.test
+metadata:
+  name: virt-lab
+controlPlane:
+  name: master
+  replicas: 3
+  architecture: amd64
+  platform: {}
+compute:
+  - name: worker
+    replicas: 3
+    architecture: amd64
+    platform: {}
+networking:
+  networkType: OVNKubernetes
+  machineNetwork:
+    - cidr: 192.0.2.0/24
+  clusterNetwork:
+    - cidr: 10.128.0.0/14
+      hostPrefix: 23
+  serviceNetwork:
+    - 172.30.0.0/16
+platform:
+  baremetal:
+    provisioningNetwork: Disabled
+    externalBridge: baremetal
+    # Site DHCP reservation for the bootstrap guest, 192.0.2.20.
+    externalMACAddress: "52:54:00:42:00:20"
+    # Separate address for permanent provisioning services on the machine network.
+    clusterProvisioningIP: 192.0.2.21
+    apiVIPs:
+      - 192.0.2.30
+    ingressVIPs:
+      - 192.0.2.31
+    additionalNTPServers:
+      - 192.0.2.54
+    # BMC address, host boot NIC MAC, and installation disk identify different devices.
+    # UEFI is explicit. Use tested BMC certificates and a validated system ID.
+    hosts:
+      - name: master-0
+        role: master
+        bootMode: UEFI
+        hardwareProfile: default
+        bootMACAddress: "02:00:00:00:00:01" # DHCP reservation 192.0.2.41
+        bmc:
+          address: redfish-virtualmedia://198.51.100.11/redfish/v1/Systems/1
+          username: "__RENDER_BMC_USERNAME__"
+          password: "__RENDER_BMC_PASSWORD__"
+          disableCertificateVerification: false
+        rootDeviceHints:
+          serialNumber: "LAB-master-0-OS"
+      - name: master-1
+        role: master
+        bootMode: UEFI
+        hardwareProfile: default
+        bootMACAddress: "02:00:00:00:00:02" # DHCP reservation 192.0.2.42
+        bmc:
+          address: redfish-virtualmedia://198.51.100.12/redfish/v1/Systems/1
+          username: "__RENDER_BMC_USERNAME__"
+          password: "__RENDER_BMC_PASSWORD__"
+          disableCertificateVerification: false
+        rootDeviceHints:
+          serialNumber: "LAB-master-1-OS"
+      - name: master-2
+        role: master
+        bootMode: UEFI
+        hardwareProfile: default
+        bootMACAddress: "02:00:00:00:00:03" # DHCP reservation 192.0.2.43
+        bmc:
+          address: redfish-virtualmedia://198.51.100.13/redfish/v1/Systems/1
+          username: "__RENDER_BMC_USERNAME__"
+          password: "__RENDER_BMC_PASSWORD__"
+          disableCertificateVerification: false
+        rootDeviceHints:
+          serialNumber: "LAB-master-2-OS"
+      - name: worker-0
+        role: worker
+        bootMode: UEFI
+        hardwareProfile: default
+        bootMACAddress: "02:00:00:00:00:04" # DHCP reservation 192.0.2.44
+        bmc:
+          address: redfish-virtualmedia://198.51.100.14/redfish/v1/Systems/1
+          username: "__RENDER_BMC_USERNAME__"
+          password: "__RENDER_BMC_PASSWORD__"
+          disableCertificateVerification: false
+        rootDeviceHints:
+          serialNumber: "LAB-worker-0-OS"
+      - name: worker-1
+        role: worker
+        bootMode: UEFI
+        hardwareProfile: default
+        bootMACAddress: "02:00:00:00:00:05" # DHCP reservation 192.0.2.45
+        bmc:
+          address: redfish-virtualmedia://198.51.100.15/redfish/v1/Systems/1
+          username: "__RENDER_BMC_USERNAME__"
+          password: "__RENDER_BMC_PASSWORD__"
+          disableCertificateVerification: false
+        rootDeviceHints:
+          serialNumber: "LAB-worker-1-OS"
+      - name: worker-2
+        role: worker
+        bootMode: UEFI
+        hardwareProfile: default
+        bootMACAddress: "02:00:00:00:00:06" # DHCP reservation 192.0.2.46
+        bmc:
+          address: redfish-virtualmedia://198.51.100.16/redfish/v1/Systems/1
+          username: "__RENDER_BMC_USERNAME__"
+          password: "__RENDER_BMC_PASSWORD__"
+          disableCertificateVerification: false
+        rootDeviceHints:
+          serialNumber: "LAB-worker-2-OS"
+# Strings populated by the renderer from private input files.
+sshKey: "__RENDER_SSH_PUBLIC_KEY__"
+pullSecret: "__RENDER_PULL_SECRET__"
